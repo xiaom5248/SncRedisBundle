@@ -155,20 +155,7 @@ class RedisSessionHandler implements \SessionHandlerInterface
      */
     private function unlockSession()
     {
-        // If we have the right token, then delete the lock
-        $script = <<<LUA
-if redis.call("GET", KEYS[1]) == ARGV[1] then
-    return redis.call("DEL", KEYS[1])
-else
-    return 0
-end
-LUA;
-
-        if ($this->redis instanceof \Redis) {
-            $this->redis->eval($script, array($this->getRedisKey($this->lockKey), $this->token), 1);
-        } else {
-            $this->redis->eval($script, 1, $this->getRedisKey($this->lockKey), $this->token);
-        }
+        $this->redis->del($this->getRedisKey($this->lockKey));
         $this->locked = false;
         $this->token = null;
     }
